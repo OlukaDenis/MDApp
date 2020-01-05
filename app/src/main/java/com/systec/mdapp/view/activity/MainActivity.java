@@ -1,6 +1,8 @@
-package com.systec.mdapp;
+package com.systec.mdapp.view.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.ViewPager;
@@ -8,22 +10,28 @@ import androidx.viewpager.widget.ViewPager;
 import android.os.Bundle;
 
 import com.google.android.material.tabs.TabLayout;
-import com.systec.mdapp.adapter.Movie_adapter;
-import com.systec.mdapp.adapter.SlidePagerAdapter;
-import com.systec.mdapp.model.movie;
-import com.systec.mdapp.model.slide;
+import com.systec.mdapp.R;
+import com.systec.mdapp.data.api.ApiService;
+import com.systec.mdapp.model.Movie;
+import com.systec.mdapp.view.adapter.Movie_adapter;
+import com.systec.mdapp.view.adapter.SlidePagerAdapter;
+import com.systec.mdapp.model.Slide;
+import com.systec.mdapp.viewmodel.MovieViewModel;
+import com.systec.mdapp.viewmodel.SlidesViewModel;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 
-    private List<slide> mSlideList;
     private ViewPager sliderPager;
     private TabLayout indicator;
     private RecyclerView movieRv;
+    private SlidesViewModel slidesViewModel;
+    private MovieViewModel movieViewModel;
+    private ApiService apiService;
+    private static final String TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,15 +42,8 @@ public class MainActivity extends AppCompatActivity {
         indicator = findViewById(R.id.indicator);
         movieRv = findViewById(R.id.recyclerView_movie);
 
-        //Dummy Data for slider
-        mSlideList = new ArrayList<>();
-        mSlideList.add(new slide(R.drawable.images,"Title \n plot explanation here"));
-        mSlideList.add(new slide(R.drawable.slide2,"Title \n plot explanation here"));
-        mSlideList.add(new slide(R.drawable.slide3,"Title \n plot explanation here"));
-        mSlideList.add(new slide(R.drawable.slide4,"Title \n plot explanation here"));
-        mSlideList.add(new slide(R.drawable.slide5,"Title \n plot explanation here"));
-        SlidePagerAdapter adapter = new SlidePagerAdapter(this, mSlideList);
-        sliderPager.setAdapter(adapter);
+        slidesViewModel = ViewModelProviders.of(this).get(SlidesViewModel.class);
+        movieViewModel = ViewModelProviders.of(this).get(MovieViewModel.class);
 
         //Slider Timer
         Timer timer = new Timer();
@@ -50,18 +51,31 @@ public class MainActivity extends AppCompatActivity {
         indicator.setupWithViewPager(sliderPager,true);
 
         //RecyclerView
-        //dummy Dtata
-        List<movie> movieList = new ArrayList<>();
-        movieList.add(new movie("AquaMan",R.drawable.thumb2));
-        movieList.add(new movie("Captain Marvel",R.drawable.thumb3));
-        movieList.add(new movie("How to train your Dragon HomeComing",R.drawable.thumb4));
-        movieList.add(new movie("Venom",R.drawable.thumb5));
-
-        Movie_adapter movie_adapter = new Movie_adapter(this, movieList);
-        movieRv.setAdapter(movie_adapter);
         movieRv.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL , false));
 
+        getMovies();
+        populateSlider();
 
+
+    }
+
+    private void populateSlider() {
+        slidesViewModel.getAllSlides().observe(this, new Observer<List<Slide>>() {
+            @Override
+            public void onChanged(List<Slide> slides) {
+                sliderPager.setAdapter(new SlidePagerAdapter(getApplicationContext(), slides));
+            }
+        });
+
+    }
+
+    private void getMovies() {
+        movieViewModel.getAllPopularMovies().observe(this, new Observer<List<Movie>>() {
+            @Override
+            public void onChanged(List<Movie> movies) {
+                movieRv.setAdapter(new Movie_adapter(getApplicationContext(), movies));
+            }
+        });
 
     }
 
@@ -72,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
             MainActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    if (sliderPager.getCurrentItem()<mSlideList.size()-1){
+                    if (sliderPager.getCurrentItem()< 5){
                         sliderPager.setCurrentItem(sliderPager.getCurrentItem()+1);
                     }
                     else {
