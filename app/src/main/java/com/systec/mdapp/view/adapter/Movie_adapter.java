@@ -1,4 +1,4 @@
-package com.systec.mdapp.adapter;
+package com.systec.mdapp.view.adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -10,18 +10,23 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.squareup.picasso.Picasso;
 import com.systec.mdapp.R;
-import com.systec.mdapp.model.movie;
+import com.systec.mdapp.model.Movie;
+import com.systec.mdapp.model.Slide;
 
 import java.util.List;
 
+import static com.systec.mdapp.utils.Constants.BACKDROP_URL_BASE_PATH;
+import static com.systec.mdapp.utils.Constants.IMAGE_URL_BASE_PATH;
+
 public class Movie_adapter extends RecyclerView.Adapter<Movie_adapter.MyViewHolder> {
     Context context;
-    List<movie> mMovies;
+    List<Movie> mMovies;
 
-    public Movie_adapter(Context context, List<movie> movies) {
+    public Movie_adapter(Context context, List<Movie> Movies) {
         this.context = context;
-        this.mMovies = movies;
+        this.mMovies = Movies;
     }
 
     @NonNull
@@ -34,7 +39,16 @@ public class Movie_adapter extends RecyclerView.Adapter<Movie_adapter.MyViewHold
     @Override
     public void onBindViewHolder(@NonNull Movie_adapter.MyViewHolder holder, int position) {
         holder.tvTitle.setText(mMovies.get(position).getTitle());
-        holder.imgMovies.setImageResource(mMovies.get(position).getThumbnail());
+
+
+        String image_url = IMAGE_URL_BASE_PATH + mMovies.get(position).getPosterPath();
+        String backdrop_url = BACKDROP_URL_BASE_PATH + mMovies.get(position).getBackdropPath();
+
+        Picasso.get()
+                .load(backdrop_url)
+                .placeholder(R.drawable.ic_movie_default)
+                .error(R.drawable.ic_movie_default)
+                .into(holder.imgMovies);
 
     }
 
