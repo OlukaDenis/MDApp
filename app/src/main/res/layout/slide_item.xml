@@ -33,21 +33,6 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
-        android:id="@+id/play_button"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:layout_centerInParent="true"
-        android:background="@drawable/ic_play_circle_filled_black_24dp"
-        android:contentDescription="Play video"
-        android:visibility="visible"
-        app:layout_constraintBottom_toTopOf="@+id/imageView3"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/slide_img"
-        app:layout_constraintVertical_bias="0.894" />
-
-    <ImageView
         android:id="@+id/imageView3"
         android:layout_width="0dp"
         android:layout_height="100dp"

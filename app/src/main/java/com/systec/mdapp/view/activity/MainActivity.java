@@ -1,99 +1,68 @@
 package com.systec.mdapp.view.activity;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProviders;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.viewpager.widget.ViewPager;
-
 import android.os.Bundle;
 
-import com.google.android.material.tabs.TabLayout;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+import androidx.navigation.ui.AppBarConfiguration;
+import androidx.navigation.ui.NavigationUI;
+
+import com.google.android.material.navigation.NavigationView;
 import com.systec.mdapp.R;
-import com.systec.mdapp.data.api.ApiService;
 import com.systec.mdapp.model.Movie;
-import com.systec.mdapp.view.adapter.Movie_adapter;
-import com.systec.mdapp.view.adapter.SlidePagerAdapter;
-import com.systec.mdapp.model.Slide;
-import com.systec.mdapp.viewmodel.MovieViewModel;
-import com.systec.mdapp.viewmodel.SlidesViewModel;
+import com.systec.mdapp.view.interfaces.MovieitemClickListener;
 
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+import androidx.drawerlayout.widget.DrawerLayout;
 
-public class MainActivity extends AppCompatActivity {
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
-    private ViewPager sliderPager;
-    private TabLayout indicator;
-    private RecyclerView movieRv;
-    private SlidesViewModel slidesViewModel;
-    private MovieViewModel movieViewModel;
-    private ApiService apiService;
-    private static final String TAG = "MainActivity";
+import android.view.Menu;
+import android.view.View;
+
+public class MainActivity extends AppCompatActivity implements MovieitemClickListener {
+
+    private AppBarConfiguration mAppBarConfiguration;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        sliderPager = findViewById(R.id.slider_pager);
-        indicator = findViewById(R.id.indicator);
-        movieRv = findViewById(R.id.recyclerView_movie);
-
-        slidesViewModel = ViewModelProviders.of(this).get(SlidesViewModel.class);
-        movieViewModel = ViewModelProviders.of(this).get(MovieViewModel.class);
-
-        //Slider Timer
-        Timer timer = new Timer();
-        timer.scheduleAtFixedRate(new MainActivity.slideTimer(),400, 6000);
-        indicator.setupWithViewPager(sliderPager,true);
-
-        //RecyclerView
-        movieRv.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL , false));
-
-        getMovies();
-        populateSlider();
-
-
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        // Passing each menu ID as a set of Ids because each
+        // menu should be considered as top level destinations.
+        mAppBarConfiguration = new AppBarConfiguration.Builder(
+                R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow,
+                R.id.nav_tools, R.id.nav_share, R.id.nav_send)
+                .setDrawerLayout(drawer)
+                .build();
+        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
+        NavigationUI.setupWithNavController(navigationView, navController);
     }
 
-    private void populateSlider() {
-        slidesViewModel.getAllSlides().observe(this, new Observer<List<Slide>>() {
-            @Override
-            public void onChanged(List<Slide> slides) {
-                sliderPager.setAdapter(new SlidePagerAdapter(getApplicationContext(), slides));
-            }
-        });
-
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
     }
 
-    private void getMovies() {
-        movieViewModel.getAllPopularMovies().observe(this, new Observer<List<Movie>>() {
-            @Override
-            public void onChanged(List<Movie> movies) {
-                movieRv.setAdapter(new Movie_adapter(getApplicationContext(), movies));
-            }
-        });
-
+    @Override
+    public boolean onSupportNavigateUp() {
+        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        return NavigationUI.navigateUp(navController, mAppBarConfiguration)
+                || super.onSupportNavigateUp();
     }
 
-    class slideTimer extends TimerTask{
+    @Override
+    public void inflateMovieDetailsFragment(View view, Movie movie) {
+        Bundle args = new Bundle();
+        args.putParcelable(getString(R.string.intent_movie_bundle), movie);
+        Navigation.findNavController(view).navigate(R.id.nav_movie_details,args);
 
-        @Override
-        public void run() {
-            MainActivity.this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (sliderPager.getCurrentItem()< 5){
-                        sliderPager.setCurrentItem(sliderPager.getCurrentItem()+1);
-                    }
-                    else {
-                        sliderPager.setCurrentItem(0);
-                    }
-                }
-            });
-        }
+
     }
 }

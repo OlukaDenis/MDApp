@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.squareup.picasso.Picasso;
 import com.systec.mdapp.R;
 import com.systec.mdapp.model.Movie;
-import com.systec.mdapp.model.Slide;
+import com.systec.mdapp.view.interfaces.MovieitemClickListener;
 
 import java.util.List;
 
@@ -23,10 +23,12 @@ import static com.systec.mdapp.utils.Constants.IMAGE_URL_BASE_PATH;
 public class Movie_adapter extends RecyclerView.Adapter<Movie_adapter.MyViewHolder> {
     Context context;
     List<Movie> mMovies;
+    MovieitemClickListener mMovieitemClickListener;
 
-    public Movie_adapter(Context context, List<Movie> Movies) {
+    public Movie_adapter(Context context, List<Movie> Movies,MovieitemClickListener listener) {
         this.context = context;
         this.mMovies = Movies;
+        mMovieitemClickListener = listener;
     }
 
     @NonNull
@@ -34,6 +36,12 @@ public class Movie_adapter extends RecyclerView.Adapter<Movie_adapter.MyViewHold
     public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.item_movie, parent,false);
         return new MyViewHolder(view);
+    }
+
+    @Override
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
+        mMovieitemClickListener = (MovieitemClickListener) context;
     }
 
     @Override
@@ -65,6 +73,16 @@ public class Movie_adapter extends RecyclerView.Adapter<Movie_adapter.MyViewHold
             super(itemView);
             tvTitle = itemView.findViewById(R.id.item_title);
             imgMovies = itemView.findViewById(R.id.item_movie_img);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    mMovieitemClickListener.inflateMovieDetailsFragment(view,mMovies.get(getAdapterPosition()));
+//                    Toast.makeText(context, mMovies.get(getAdapterPosition()).getTitle(), Toast.LENGTH_SHORT).show();
+
+                }
+            });
 
         }
     }
